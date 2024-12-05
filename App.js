@@ -57,7 +57,7 @@ export default function App() {
             <Stack.Screen
               name="Configurar Alarma"
               component={AlarmConfigScreen}
-              options={{ headerShown: true }}
+              options={{ headerTitle: 'Configurar Alarma' }}
             />
           </Stack.Navigator>
         </NavigationContainer>

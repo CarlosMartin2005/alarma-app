@@ -5,8 +5,8 @@ import { Ionicons } from '@expo/vector-icons';
 const AlarmScreen = ({ navigation }) => {
   const [alarms, setAlarms] = useState([]);
 
-  const addAlarm = () => {
-    navigation.navigate('Configurar Alarma');
+  const addAlarm = (newAlarm) => {
+    setAlarms((prevAlarms) => [...prevAlarms, newAlarm]);
   };
 
   return (
@@ -15,11 +15,16 @@ const AlarmScreen = ({ navigation }) => {
       <FlatList
         data={alarms}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <Text style={styles.alarm}>{item.time}</Text>}
+        renderItem={({ item }) => (
+          <View style={styles.alarmContainer}>
+            <Text style={styles.alarm}>{item.time}</Text>
+            <Text style={styles.alarm}>{item.name}</Text>
+          </View>
+        )}
       />
       <TouchableOpacity
         style={styles.addButton}
-        onPress={addAlarm}
+        onPress={() => navigation.navigate('Configurar Alarma', { addAlarm })}
       >
         <Ionicons name="add" size={32} color="white" />
       </TouchableOpacity>
@@ -39,9 +44,16 @@ const styles = StyleSheet.create({
     fontSize: 24,
     marginBottom: 20,
   },
+  alarmContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: 'gray',
+  },
   alarm: {
     fontSize: 18,
-    marginVertical: 10,
   },
   addButton: {
     position: 'absolute',
