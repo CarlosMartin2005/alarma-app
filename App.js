@@ -2,9 +2,9 @@ import React, { useEffect } from 'react';
 import { StyleSheet } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import { NavigationContainer } from '@react-navigation/native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
-import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import AlarmScreen from './AlarmScreen';
 import ClockScreen from './ClockScreen';
 import StopwatchScreen from './StopwatchScreen';
@@ -19,19 +19,23 @@ Notifications.setNotificationHandler({
   }),
 });
 
-const Tab = createBottomTabNavigator();
+const Tab = createMaterialTopTabNavigator();
 const Stack = createStackNavigator();
 
-function AlarmStack() {
+function MainTabs() {
   return (
-    <Stack.Navigator>
-      <Stack.Screen name="Alarmas" component={AlarmScreen} />
-      <Stack.Screen
-        name="Configurar Alarma"
-        component={AlarmConfigScreen}
-        options={{ headerShown: false }}
-      />
-    </Stack.Navigator>
+    <Tab.Navigator
+      screenOptions={{
+        tabBarScrollEnabled: true,
+        tabBarItemStyle: { width: 'auto' },
+        tabBarLabelStyle: { fontSize: 14 },
+      }}
+    >
+      <Tab.Screen name="Alarma" component={AlarmScreen} />
+      <Tab.Screen name="Reloj" component={ClockScreen} />
+      <Tab.Screen name="Cronómetro" component={StopwatchScreen} />
+      <Tab.Screen name="Temporizador" component={TimerScreen} />
+    </Tab.Navigator>
   );
 }
 
@@ -41,32 +45,24 @@ export default function App() {
   }, []);
 
   return (
-    <NavigationContainer>
-      <Tab.Navigator
-        screenOptions={({ route }) => ({
-          tabBarIcon: ({ color, size }) => {
-            let iconName;
-
-            if (route.name === 'Alarma') {
-              iconName = 'alarm';
-            } else if (route.name === 'Reloj') {
-              iconName = 'time';
-            } else if (route.name === 'Cronómetro') {
-              iconName = 'stopwatch';
-            } else if (route.name === 'Temporizador') {
-              iconName = 'timer';
-            }
-
-            return <Ionicons name={iconName} size={size} color={color} />;
-          },
-        })}
-      >
-        <Tab.Screen name="Alarma" component={AlarmStack} />
-        <Tab.Screen name="Reloj" component={ClockScreen} />
-        <Tab.Screen name="Cronómetro" component={StopwatchScreen} />
-        <Tab.Screen name="Temporizador" component={TimerScreen} />
-      </Tab.Navigator>
-    </NavigationContainer>
+    <SafeAreaProvider>
+      <SafeAreaView style={{ flex: 1 }}>
+        <NavigationContainer>
+          <Stack.Navigator>
+            <Stack.Screen
+              name="Main"
+              component={MainTabs}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="Configurar Alarma"
+              component={AlarmConfigScreen}
+              options={{ headerShown: true }}
+            />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 }
 

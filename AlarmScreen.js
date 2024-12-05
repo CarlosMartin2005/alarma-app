@@ -1,24 +1,12 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, FlatList, Button, TouchableOpacity } from 'react-native';
-import * as Notifications from 'expo-notifications';
+import { StyleSheet, Text, View, FlatList, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 const AlarmScreen = ({ navigation }) => {
   const [alarms, setAlarms] = useState([]);
 
-  const addAlarm = async () => {
-    const newAlarm = { id: Date.now().toString(), time: '07:00 AM' };
-    setAlarms([...alarms, newAlarm]);
-
-    await Notifications.scheduleNotificationAsync({
-      content: {
-        title: "Alarma",
-        body: "¡Es hora de despertar!",
-      },
-      trigger: {
-        seconds: 10, // Esto es solo un ejemplo, deberías calcular el tiempo real
-      },
-    });
+  const addAlarm = () => {
+    navigation.navigate('Configurar Alarma');
   };
 
   return (
@@ -31,7 +19,7 @@ const AlarmScreen = ({ navigation }) => {
       />
       <TouchableOpacity
         style={styles.addButton}
-        onPress={() => navigation.navigate('Configurar Alarma')}
+        onPress={addAlarm}
       >
         <Ionicons name="add" size={32} color="white" />
       </TouchableOpacity>
