@@ -39,12 +39,17 @@ const AlarmConfigScreen = ({ navigation, route }) => {
     trigger.setHours(hour);
     trigger.setMinutes(minute);
     trigger.setSeconds(0);
-
+  
+    // Si la hora programada ya ha pasado hoy, programa para mañana
+    if (trigger <= new Date()) {
+      trigger.setDate(trigger.getDate() + 1);
+    }
+  
     await Notifications.scheduleNotificationAsync({
       content: {
         title: "Alarma",
         body: alarm.name || "¡Es hora!",
-        sound: alarm.sound,
+        sound: 'default', // Usa el sonido predeterminado para probar
         vibrate: true,
       },
       trigger,

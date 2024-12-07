@@ -44,7 +44,14 @@ function MainTabs() {
 
 export default function App() {
   useEffect(() => {
-    Notifications.requestPermissionsAsync();
+    const requestPermissions = async () => {
+      const { status } = await Notifications.requestPermissionsAsync();
+      if (status !== 'granted') {
+        alert('Permission to access notifications was denied');
+      }
+    };
+
+    requestPermissions();
   }, []);
 
   return (
