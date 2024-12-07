@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, Button, TextInput, StyleSheet, ScrollView, TouchableOpacity, Switch, Platform } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -16,9 +16,25 @@ const AlarmConfigScreen = ({ navigation, route }) => {
   const [isSnoozeEnabled, setIsSnoozeEnabled] = useState(false);
   const [isSoundEnabled, setIsSoundEnabled] = useState(false);
 
+  useEffect(() => {
+    if (route.params?.alarm) {
+      const { alarm } = route.params;
+      setTime(new Date(`1970-01-01T${alarm.time}:00`));
+      setRepeat(alarm.repeat);
+      setName(alarm.name);
+      setSnoozeInterval(alarm.snoozeInterval || 5);
+      setSnoozeRepeat(alarm.snoozeRepeat || 3);
+      setSound(alarm.sound || 'Default');
+      setIsRepeatEnabled(alarm.repeat.length > 0);
+      setIsNameEnabled(!!alarm.name);
+      setIsSnoozeEnabled(!!alarm.snoozeInterval);
+      setIsSoundEnabled(alarm.sound !== 'Default');
+    }
+  }, [route.params?.alarm]);
+
   const saveAlarm = () => {
     const newAlarm = {
-      id: Date.now().toString(),
+      id: route.params?.alarm ? route.params.alarm.id : Date.now().toString(),
       time: time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       repeat: isRepeatEnabled ? repeat : [],
       name: isNameEnabled ? name : '',

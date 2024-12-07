@@ -67,6 +67,17 @@ const AlarmScreen = ({ navigation }) => {
     );
   };
 
+  const editAlarm = (alarm) => {
+    navigation.navigate('Configurar Alarma', { alarm, addAlarm });
+  };
+
+  const formatTime = (time) => {
+    const [hour, minute] = time.split(':');
+    const period = hour >= 12 ? 'p.m.' : 'a.m.';
+    const formattedHour = hour % 12 || 12;
+    return `${formattedHour}:${minute} ${period}`;
+  };
+
   return (
     <View style={styles.container}>
       <FlatList
@@ -75,14 +86,20 @@ const AlarmScreen = ({ navigation }) => {
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.alarmContainer}
+            onPress={() => editAlarm(item)}
             onLongPress={() => deleteAlarm(item.id)}
           >
             <View style={styles.alarmInfo}>
-              <Text style={styles.alarmTime}>{item.time}</Text>
+              <View style={styles.timeAndDays}>
+                <Text style={styles.alarmTime}>
+                  {formatTime(item.time).split(' ')[0]}
+                  <Text style={styles.alarmPeriod}> {formatTime(item.time).split(' ')[1]}</Text>
+                </Text>
+                <Text style={styles.alarmDays}>
+                  {item.repeat.length > 0 ? item.repeat.map(day => day[0]).join(', ') : 'No repetir'}
+                </Text>
+              </View>
               <Text style={styles.alarmName}>{item.name}</Text>
-              <Text style={styles.alarmDays}>
-                {item.repeat.length > 0 ? item.repeat.join(', ') : 'No repetir'}
-              </Text>
             </View>
             <Switch
               value={item.enabled}
@@ -111,24 +128,34 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 15,
+    padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: 'gray',
   },
   alarmInfo: {
     flex: 1,
   },
-  alarmTime: {
-    fontSize: 32,
-    fontWeight: 'bold',
+  timeAndDays: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
-  alarmName: {
+  alarmTime: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: 'gray',
+  },
+  alarmPeriod: {
     fontSize: 18,
     color: 'gray',
   },
   alarmDays: {
     fontSize: 14,
-    color: 'gray',
+    color: '#87CEFA',
+    marginLeft: 10,
+  },
+  alarmName: {
+    fontSize: 16,
+    color: '#87CEFA',
   },
   addButton: {
     position: 'absolute',

@@ -28,7 +28,10 @@ function MainTabs() {
       screenOptions={{
         tabBarScrollEnabled: true,
         tabBarItemStyle: { width: 'auto' },
-        tabBarLabelStyle: { fontSize: 14 },
+        tabBarLabelStyle: { fontSize: 14, color: 'gray' },
+        tabBarActiveTintColor: '#1E90FF',
+        tabBarPressColor: '#1E90FF',
+        tabBarInactiveTintColor: 'gray',
       }}
     >
       <Tab.Screen name="Alarma" component={AlarmScreen} />
