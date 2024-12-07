@@ -82,7 +82,7 @@ const AlarmScreen = ({ navigation }) => {
     <View style={styles.container}>
       <FlatList
         data={alarms}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.id.toString()} // Asegurarse de que las claves sean únicas
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.alarmContainer}
@@ -96,7 +96,7 @@ const AlarmScreen = ({ navigation }) => {
                   <Text style={styles.alarmPeriod}> {formatTime(item.time).split(' ')[1]}</Text>
                 </Text>
                 <Text style={styles.alarmDays}>
-                  {item.repeat.length > 0 ? item.repeat.map(day => day[0]).join(', ') : 'No repetir'}
+                  {item.repeat.length > 0 ? item.repeat.map(day => day === 'Martes' ? 'Ma' : day === 'Miércoles' ? 'Mi' : day[0]).join(', ') : 'No repetir'}
                 </Text>
               </View>
               <Text style={styles.alarmName}>{item.name}</Text>

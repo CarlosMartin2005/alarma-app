@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, Button, TextInput, StyleSheet, ScrollView, TouchableOpacity, Switch, Platform } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import * as Notifications from 'expo-notifications';
 
 const AlarmConfigScreen = ({ navigation, route }) => {
   const [time, setTime] = useState(new Date());
@@ -10,7 +11,7 @@ const AlarmConfigScreen = ({ navigation, route }) => {
   const [name, setName] = useState('');
   const [snoozeInterval, setSnoozeInterval] = useState(5);
   const [snoozeRepeat, setSnoozeRepeat] = useState(3);
-  const [sound, setSound] = useState('Default');
+  const [sound, setSound] = useState('default');
   const [isRepeatEnabled, setIsRepeatEnabled] = useState(false);
   const [isNameEnabled, setIsNameEnabled] = useState(false);
   const [isSnoozeEnabled, setIsSnoozeEnabled] = useState(false);
@@ -24,15 +25,33 @@ const AlarmConfigScreen = ({ navigation, route }) => {
       setName(alarm.name);
       setSnoozeInterval(alarm.snoozeInterval || 5);
       setSnoozeRepeat(alarm.snoozeRepeat || 3);
-      setSound(alarm.sound || 'Default');
+      setSound(alarm.sound || 'default');
       setIsRepeatEnabled(alarm.repeat.length > 0);
       setIsNameEnabled(!!alarm.name);
       setIsSnoozeEnabled(!!alarm.snoozeInterval);
-      setIsSoundEnabled(alarm.sound !== 'Default');
+      setIsSoundEnabled(alarm.sound !== 'default');
     }
   }, [route.params?.alarm]);
 
-  const saveAlarm = () => {
+  const scheduleNotification = async (alarm) => {
+    const trigger = new Date();
+    const [hour, minute] = alarm.time.split(':');
+    trigger.setHours(hour);
+    trigger.setMinutes(minute);
+    trigger.setSeconds(0);
+
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: "Alarma",
+        body: alarm.name || "¡Es hora!",
+        sound: alarm.sound,
+        vibrate: true,
+      },
+      trigger,
+    });
+  };
+
+  const saveAlarm = async () => {
     const newAlarm = {
       id: route.params?.alarm ? route.params.alarm.id : Date.now().toString(),
       time: time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -40,9 +59,10 @@ const AlarmConfigScreen = ({ navigation, route }) => {
       name: isNameEnabled ? name : '',
       snoozeInterval: isSnoozeEnabled ? snoozeInterval : null,
       snoozeRepeat: isSnoozeEnabled ? snoozeRepeat : null,
-      sound: isSoundEnabled ? sound : 'Default',
+      sound: isSoundEnabled ? sound : 'default',
       enabled: true,
     };
+    await scheduleNotification(newAlarm);
     route.params.addAlarm(newAlarm);
     navigation.goBack();
   };
@@ -89,13 +109,15 @@ const AlarmConfigScreen = ({ navigation, route }) => {
         </View>
         {isRepeatEnabled && (
           <View style={styles.daysContainer}>
-            {['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'].map((day) => (
+            {['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'].map((day, index) => (
               <TouchableOpacity
-                key={day}
+                key={index}
                 style={[styles.dayButton, repeat.includes(day) && styles.dayButtonActive]}
                 onPress={() => toggleDay(day)}
               >
-                <Text style={styles.dayButtonText}>{day[0]}</Text>
+                <Text style={styles.dayButtonText}>
+                  {day === 'Martes' ? 'Ma' : day === 'Miércoles' ? 'Mi' : day[0]}
+                </Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -154,7 +176,7 @@ const AlarmConfigScreen = ({ navigation, route }) => {
             style={styles.picker}
             onValueChange={(itemValue) => setSound(itemValue)}
           >
-            {['Default', 'Beep', 'Chime', 'Ring'].map((sound) => (
+            {['default', 'Beep', 'Chime', 'Ring'].map((sound) => (
               <Picker.Item key={sound} label={sound} value={sound} />
             ))}
           </Picker>
