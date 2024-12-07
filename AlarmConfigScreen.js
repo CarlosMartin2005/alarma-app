@@ -25,6 +25,7 @@ const AlarmConfigScreen = ({ navigation, route }) => {
       snoozeInterval: isSnoozeEnabled ? snoozeInterval : null,
       snoozeRepeat: isSnoozeEnabled ? snoozeRepeat : null,
       sound: isSoundEnabled ? sound : 'Default',
+      enabled: true,
     };
     route.params.addAlarm(newAlarm);
     navigation.goBack();
