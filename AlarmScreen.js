@@ -1,12 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, FlatList, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const AlarmScreen = ({ navigation }) => {
   const [alarms, setAlarms] = useState([]);
 
+  useEffect(() => {
+    const loadAlarms = async () => {
+      try {
+        const storedAlarms = await AsyncStorage.getItem('alarms');
+        if (storedAlarms) {
+          setAlarms(JSON.parse(storedAlarms));
+        }
+      } catch (error) {
+        console.error('Failed to load alarms', error);
+      }
+    };
+
+    loadAlarms();
+  }, []);
+
   const addAlarm = (newAlarm) => {
-    setAlarms((prevAlarms) => [...prevAlarms, newAlarm]);
+    const updatedAlarms = [...alarms, newAlarm];
+    setAlarms(updatedAlarms);
+    try {
+      AsyncStorage.setItem('alarms', JSON.stringify(updatedAlarms));
+    } catch (error) {
+      console.error('Failed to save alarms', error);
+    }
   };
 
   return (

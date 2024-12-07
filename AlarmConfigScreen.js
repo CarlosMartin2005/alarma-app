@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, Button, TextInput, StyleSheet, ScrollView, TouchableOpacity, Platform } from 'react-native';
+import { View, Text, Button, TextInput, StyleSheet, ScrollView, TouchableOpacity, Switch, Platform } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
@@ -11,16 +11,20 @@ const AlarmConfigScreen = ({ navigation, route }) => {
   const [snoozeInterval, setSnoozeInterval] = useState(5);
   const [snoozeRepeat, setSnoozeRepeat] = useState(3);
   const [sound, setSound] = useState('Default');
+  const [isRepeatEnabled, setIsRepeatEnabled] = useState(false);
+  const [isNameEnabled, setIsNameEnabled] = useState(false);
+  const [isSnoozeEnabled, setIsSnoozeEnabled] = useState(false);
+  const [isSoundEnabled, setIsSoundEnabled] = useState(false);
 
   const saveAlarm = () => {
     const newAlarm = {
       id: Date.now().toString(),
       time: time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      repeat,
-      name,
-      snoozeInterval,
-      snoozeRepeat,
-      sound,
+      repeat: isRepeatEnabled ? repeat : [],
+      name: isNameEnabled ? name : '',
+      snoozeInterval: isSnoozeEnabled ? snoozeInterval : null,
+      snoozeRepeat: isSnoozeEnabled ? snoozeRepeat : null,
+      sound: isSoundEnabled ? sound : 'Default',
     };
     route.params.addAlarm(newAlarm);
     navigation.goBack();
@@ -62,60 +66,82 @@ const AlarmConfigScreen = ({ navigation, route }) => {
         />
       )}
       <View style={styles.optionContainer}>
-        <Text>Repetir</Text>
-        <View style={styles.daysContainer}>
-          {['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'].map((day) => (
-            <TouchableOpacity
-              key={day}
-              style={[styles.dayButton, repeat.includes(day) && styles.dayButtonActive]}
-              onPress={() => toggleDay(day)}
-            >
-              <Text style={styles.dayButtonText}>{day[0]}</Text>
-            </TouchableOpacity>
-          ))}
+        <View style={styles.optionRow}>
+          <Text>Repetir</Text>
+          <Switch value={isRepeatEnabled} onValueChange={setIsRepeatEnabled} />
         </View>
+        {isRepeatEnabled && (
+          <View style={styles.daysContainer}>
+            {['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'].map((day) => (
+              <TouchableOpacity
+                key={day}
+                style={[styles.dayButton, repeat.includes(day) && styles.dayButtonActive]}
+                onPress={() => toggleDay(day)}
+              >
+                <Text style={styles.dayButtonText}>{day[0]}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
       </View>
       <View style={styles.optionContainer}>
-        <Text>Nombre</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Nombre de la alarma"
-          value={name}
-          onChangeText={setName}
-        />
+        <View style={styles.optionRow}>
+          <Text>Nombre</Text>
+          <Switch value={isNameEnabled} onValueChange={setIsNameEnabled} />
+        </View>
+        {isNameEnabled && (
+          <TextInput
+            style={styles.input}
+            placeholder="Nombre de la alarma"
+            value={name}
+            onChangeText={setName}
+          />
+        )}
       </View>
       <View style={styles.optionContainer}>
-        <Text>Aplazar</Text>
-        <Picker
-          selectedValue={snoozeInterval}
-          style={styles.picker}
-          onValueChange={(itemValue) => setSnoozeInterval(itemValue)}
-        >
-          {[5, 10, 15, 20, 25, 30].map((interval) => (
-            <Picker.Item key={interval} label={`${interval} minutos`} value={interval} />
-          ))}
-        </Picker>
-        <Picker
-          selectedValue={snoozeRepeat}
-          style={styles.picker}
-          onValueChange={(itemValue) => setSnoozeRepeat(itemValue)}
-        >
-          {[3, 5, 10, 15].map((repeat) => (
-            <Picker.Item key={repeat} label={`${repeat} veces`} value={repeat} />
-          ))}
-        </Picker>
+        <View style={styles.optionRow}>
+          <Text>Aplazar</Text>
+          <Switch value={isSnoozeEnabled} onValueChange={setIsSnoozeEnabled} />
+        </View>
+        {isSnoozeEnabled && (
+          <>
+            <Picker
+              selectedValue={snoozeInterval}
+              style={styles.picker}
+              onValueChange={(itemValue) => setSnoozeInterval(itemValue)}
+            >
+              {[5, 10, 15, 20, 25, 30].map((interval) => (
+                <Picker.Item key={interval} label={`${interval} minutos`} value={interval} />
+              ))}
+            </Picker>
+            <Picker
+              selectedValue={snoozeRepeat}
+              style={styles.picker}
+              onValueChange={(itemValue) => setSnoozeRepeat(itemValue)}
+            >
+              {[3, 5, 10, 15].map((repeat) => (
+                <Picker.Item key={repeat} label={`${repeat} veces`} value={repeat} />
+              ))}
+            </Picker>
+          </>
+        )}
       </View>
       <View style={styles.optionContainer}>
-        <Text>Sonido</Text>
-        <Picker
-          selectedValue={sound}
-          style={styles.picker}
-          onValueChange={(itemValue) => setSound(itemValue)}
-        >
-          {['Default', 'Beep', 'Chime', 'Ring'].map((sound) => (
-            <Picker.Item key={sound} label={sound} value={sound} />
-          ))}
-        </Picker>
+        <View style={styles.optionRow}>
+          <Text>Sonido</Text>
+          <Switch value={isSoundEnabled} onValueChange={setIsSoundEnabled} />
+        </View>
+        {isSoundEnabled && (
+          <Picker
+            selectedValue={sound}
+            style={styles.picker}
+            onValueChange={(itemValue) => setSound(itemValue)}
+          >
+            {['Default', 'Beep', 'Chime', 'Ring'].map((sound) => (
+              <Picker.Item key={sound} label={sound} value={sound} />
+            ))}
+          </Picker>
+        )}
       </View>
       <View style={styles.buttonContainer}>
         <Button title="Guardar" onPress={saveAlarm} />
@@ -143,6 +169,11 @@ const styles = StyleSheet.create({
   },
   optionContainer: {
     marginBottom: 20,
+  },
+  optionRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   daysContainer: {
     flexDirection: 'row',
