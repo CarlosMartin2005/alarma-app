@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, Button, TextInput, StyleSheet, ScrollView, TouchableOpacity, Switch, Platform } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as Notifications from 'expo-notifications';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const AlarmConfigScreen = ({ navigation, route }) => {
   const [time, setTime] = useState(new Date());
@@ -16,11 +17,20 @@ const AlarmConfigScreen = ({ navigation, route }) => {
   const [isNameEnabled, setIsNameEnabled] = useState(false);
   const [isSnoozeEnabled, setIsSnoozeEnabled] = useState(false);
   const [isSoundEnabled, setIsSoundEnabled] = useState(false);
+  const [isTimeChanged, setIsTimeChanged] = useState(false);
+  const [notificationId, setNotificationId] = useState("none");
+
+  const notificationListener = useRef();
 
   useEffect(() => {
     if (route.params?.alarm) {
       const { alarm } = route.params;
-      setTime(new Date(`1970-01-01T${alarm.time}:00`));
+      const [hour, minute] = alarm.time.split(':');
+      const alarmTime = new Date();
+      alarmTime.setHours(hour);
+      alarmTime.setMinutes(minute);
+      alarmTime.setSeconds(0);
+      setTime(alarmTime);
       setRepeat(alarm.repeat);
       setName(alarm.name);
       setSnoozeInterval(alarm.snoozeInterval || 5);
@@ -31,13 +41,24 @@ const AlarmConfigScreen = ({ navigation, route }) => {
       setIsSnoozeEnabled(!!alarm.snoozeInterval);
       setIsSoundEnabled(alarm.sound !== 'default');
     }
+
+    getData();
+    notificationListener.current =
+      Notifications.addNotificationResponseReceivedListener((notification) => {
+        console.log(notification);
+      });
+    return () => {
+      Notifications.removeNotificationSubscription(
+        notificationListener.current
+      );
+    };
   }, [route.params?.alarm]);
 
   const scheduleNotification = async (alarm) => {
     const trigger = new Date();
     const [hour, minute] = alarm.time.split(':');
-    trigger.setHours(hour);
-    trigger.setMinutes(minute);
+    trigger.setHours(parseInt(hour, 10));
+    trigger.setMinutes(parseInt(minute, 10));
     trigger.setSeconds(0);
   
     // Si la hora programada ya ha pasado hoy, programa para mañana
@@ -45,20 +66,27 @@ const AlarmConfigScreen = ({ navigation, route }) => {
       trigger.setDate(trigger.getDate() + 1);
     }
   
-    await Notifications.scheduleNotificationAsync({
+    // Programar la notificación
+    const identifier = await Notifications.scheduleNotificationAsync({
       content: {
         title: "Alarma",
         body: alarm.name || "¡Es hora!",
-        sound: 'default', // Usa el sonido predeterminado para probar
-        vibrate: true,
+        sound: alarm.sound !== 'default' ? alarm.sound : null, // Configurar sonido solo si no es 'default'
+        vibrate: [0, 500, 200, 500], // Patrón de vibración
       },
-      trigger,
+      trigger: {
+        date: trigger, // Usar el objeto Date directamente
+        repeats: false, // Cambiar si la alarma debe repetirse
+      },
     });
+  
+    setNotificationId(identifier);
+    await storeData(identifier);
   };
 
   const saveAlarm = async () => {
     const newAlarm = {
-      id: route.params?.alarm ? route.params.alarm.id : Date.now().toString(),
+      id: Date.now().toString(),
       time: time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       repeat: isRepeatEnabled ? repeat : [],
       name: isNameEnabled ? name : '',
@@ -67,8 +95,16 @@ const AlarmConfigScreen = ({ navigation, route }) => {
       sound: isSoundEnabled ? sound : 'default',
       enabled: true,
     };
+  
+    if (route.params?.alarm) {
+      // Actualizar alarma existente
+      route.params.updateAlarm(newAlarm);
+    } else {
+      // Agregar nueva alarma
+      route.params.addAlarm(newAlarm);
+    }
+  
     await scheduleNotification(newAlarm);
-    route.params.addAlarm(newAlarm);
     navigation.goBack();
   };
 
@@ -86,6 +122,30 @@ const AlarmConfigScreen = ({ navigation, route }) => {
     const currentTime = selectedTime || time;
     setShowTimePicker(Platform.OS === 'ios');
     setTime(currentTime);
+    setIsTimeChanged(true);
+  };
+
+  const storeData = async (id) => {
+    try {
+      const savedValues = id;
+      const jsonValue = await AsyncStorage.setItem(
+        "currentAlarmId",
+        JSON.stringify(savedValues)
+      );
+      return jsonValue;
+    } catch (e) {
+      alert(e);
+    }
+  };
+
+  const getData = async () => {
+    try {
+      const jsonValue = await AsyncStorage.getItem("currentAlarmId");
+      const jsonValue2 = JSON.parse(jsonValue);
+      setNotificationId(jsonValue2);
+    } catch (e) {
+      alert(e);
+    }
   };
 
   return (
@@ -188,7 +248,7 @@ const AlarmConfigScreen = ({ navigation, route }) => {
         )}
       </View>
       <View style={styles.buttonContainer}>
-        <Button title="Guardar" onPress={saveAlarm} />
+        <Button title="Guardar" onPress={saveAlarm} disabled={!isTimeChanged} />
         <Button title="Cancelar" onPress={() => navigation.goBack()} />
       </View>
     </ScrollView>

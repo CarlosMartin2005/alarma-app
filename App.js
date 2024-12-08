@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { StyleSheet } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { StyleSheet, LogBox, Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import { NavigationContainer } from '@react-navigation/native';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
@@ -10,11 +10,16 @@ import ClockScreen from './ClockScreen';
 import StopwatchScreen from './StopwatchScreen';
 import TimerScreen from './TimerScreen';
 import AlarmConfigScreen from './AlarmConfigScreen';
+import Constants from 'expo-constants';
+import * as Device from 'expo-device';
+
+LogBox.ignoreLogs(["new NativeEventEmitter"]);
+LogBox.ignoreAllLogs();
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowAlert: true,
     shouldPlaySound: true,
+    shouldShowAlert: true,
     shouldSetBadge: false,
   }),
 });
@@ -43,6 +48,10 @@ function MainTabs() {
 }
 
 export default function App() {
+  const [expoPushToken, setExpoPushToken] = useState('');
+  const notificationListener = useRef();
+  const responseListener = useRef();
+
   useEffect(() => {
     const requestPermissions = async () => {
       const { status } = await Notifications.requestPermissionsAsync();
@@ -52,6 +61,21 @@ export default function App() {
     };
 
     requestPermissions();
+
+    registerForPushNotificationsAsync().then(token => token && setExpoPushToken(token));
+
+    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
+      console.log(notification);
+    });
+
+    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
+      console.log(response);
+    });
+
+    return () => {
+      Notifications.removeNotificationSubscription(notificationListener.current);
+      Notifications.removeNotificationSubscription(responseListener.current);
+    };
   }, []);
 
   return (
@@ -84,3 +108,44 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 });
+
+async function registerForPushNotificationsAsync() {
+  let token;
+
+  if (Platform.OS === 'android') {
+    await Notifications.setNotificationChannelAsync('myNotificationChannel', {
+      name: 'Default',
+      importance: Notifications.AndroidImportance.MAX,
+      vibrationPattern: [0, 250, 250, 250],
+      lightColor: '#FF231F7C',
+    });
+  }
+
+  if (Device.isDevice) {
+    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
+    if (existingStatus !== 'granted') {
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
+    }
+    if (finalStatus !== 'granted') {
+      alert('Failed to get push token for push notification!');
+      return;
+    }
+    try {
+      const projectId = 'your-project-id'; // Reemplaza con tu Project ID
+      token = (
+        await Notifications.getExpoPushTokenAsync({
+          projectId,
+        })
+      ).data;
+      console.log(token);
+    } catch (e) {
+      token = `${e}`;
+    }
+  } else {
+    alert('Must use physical device for Push Notifications');
+  }
+
+  return token;
+}

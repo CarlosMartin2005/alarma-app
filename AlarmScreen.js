@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, Text, View, FlatList, TouchableOpacity, Switch, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Notifications from 'expo-notifications';
 
 const AlarmScreen = ({ navigation }) => {
   const [alarms, setAlarms] = useState([]);
+  const notificationListener = useRef();
 
   useEffect(() => {
     const loadAlarms = async () => {
@@ -19,6 +21,15 @@ const AlarmScreen = ({ navigation }) => {
     };
 
     loadAlarms();
+
+    notificationListener.current =
+      Notifications.addNotificationResponseReceivedListener((notification) => {
+        console.log(notification);
+      });
+
+    return () => {
+      Notifications.removeNotificationSubscription(notificationListener.current);
+    };
   }, []);
 
   const addAlarm = (newAlarm) => {
@@ -30,7 +41,18 @@ const AlarmScreen = ({ navigation }) => {
       console.error('Failed to save alarms', error);
     }
   };
-
+  
+  const updateAlarm = (updatedAlarm) => {
+    const updatedAlarms = alarms.map((alarm) =>
+      alarm.id === updatedAlarm.id ? updatedAlarm : alarm
+    );
+    setAlarms(updatedAlarms);
+    try {
+      AsyncStorage.setItem('alarms', JSON.stringify(updatedAlarms));
+    } catch (error) {
+      console.error('Failed to save alarms', error);
+    }
+  };
   const toggleAlarm = (id) => {
     const updatedAlarms = alarms.map((alarm) =>
       alarm.id === id ? { ...alarm, enabled: !alarm.enabled } : alarm
@@ -68,7 +90,7 @@ const AlarmScreen = ({ navigation }) => {
   };
 
   const editAlarm = (alarm) => {
-    navigation.navigate('Configurar Alarma', { alarm, addAlarm });
+    navigation.navigate('Configurar Alarma', { alarm, addAlarm, updateAlarm });
   };
 
   const formatTime = (time) => {
