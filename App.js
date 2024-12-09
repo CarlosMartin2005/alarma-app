@@ -12,6 +12,7 @@ import TimerScreen from './TimerScreen';
 import AlarmConfigScreen from './AlarmConfigScreen';
 import AlarmSavedScreen from './AlarmSavedScreen';
 import JuegoControladoGestos from './JuegoControladoGestos';
+import DeteccionFiguras from './DeteccionFiguras'; // Importa el nuevo componente
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
 
@@ -104,6 +105,11 @@ export default function App() {
               name="JuegoControladoGestos"
               component={JuegoControladoGestos}
               options={{ headerTitle: 'Juego Controlado por Gestos' }}
+            />
+            <Stack.Screen
+              name="DeteccionFiguras"
+              component={DeteccionFiguras} // Registro de la nueva pantalla
+              options={{ headerTitle: 'Detección de Figuras' }}
             />
           </Stack.Navigator>
         </NavigationContainer>

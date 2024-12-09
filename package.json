@@ -27,6 +27,7 @@
     "expo-camera": "^16.0.9",
     "expo-device": "~7.0.1",
     "expo-gl": "^15.0.2",
+    "expo-image-manipulator": "^13.0.5",
     "expo-location": "~18.0.3",
     "expo-notifications": "~0.29.11",
     "expo-status-bar": "~2.0.0",
