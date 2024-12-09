@@ -105,9 +105,10 @@ const AlarmConfigScreen = ({ navigation, route }) => {
     }
   
     await scheduleNotification(newAlarm);
-    navigation.goBack();
+    navigation.navigate('AlarmSavedScreen');
   };
-
+  
+  
   const toggleDay = (day) => {
     setRepeat((prev) => {
       if (prev.includes(day)) {

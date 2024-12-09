@@ -10,6 +10,8 @@ import ClockScreen from './ClockScreen';
 import StopwatchScreen from './StopwatchScreen';
 import TimerScreen from './TimerScreen';
 import AlarmConfigScreen from './AlarmConfigScreen';
+import AlarmSavedScreen from './AlarmSavedScreen';
+import JuegoControladoGestos from './JuegoControladoGestos';
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
 
@@ -92,6 +94,16 @@ export default function App() {
               name="Configurar Alarma"
               component={AlarmConfigScreen}
               options={{ headerTitle: 'Configurar Alarma' }}
+            />
+            <Stack.Screen
+              name="AlarmSavedScreen"
+              component={AlarmSavedScreen}
+              options={{ headerTitle: 'Configura forma de desbloquear' }}
+            />
+            <Stack.Screen
+              name="JuegoControladoGestos"
+              component={JuegoControladoGestos}
+              options={{ headerTitle: 'Juego Controlado por Gestos' }}
             />
           </Stack.Navigator>
         </NavigationContainer>
