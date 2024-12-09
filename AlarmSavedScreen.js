@@ -10,7 +10,7 @@ const UnlockConfigScreen = ({ navigation }) => {
       <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('DeteccionFiguras')}>
         <Text style={styles.cardText}>Detección de figura</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.card} onPress={() => { /* Acción para Detección de objetos */ }}>
+      <TouchableOpacity style={styles.card} onPress={() => navigation.navigate('ObjectDetectionScreen')}>
         <Text style={styles.cardText}>Detección de objetos</Text>
       </TouchableOpacity>
     </View>

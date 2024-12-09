@@ -13,6 +13,9 @@ import AlarmConfigScreen from './AlarmConfigScreen';
 import AlarmSavedScreen from './AlarmSavedScreen';
 import JuegoControladoGestos from './JuegoControladoGestos';
 import DeteccionFiguras from './DeteccionFiguras'; // Importa el nuevo componente
+import ObjectDetectionScreen from './ObjectDetectionScreen';
+import ObjectSearchScreen from './ObjectSearchScreen';
+import ObjetoEncontradoScreen from './ObjetoEncontradoScreen';
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
 
@@ -110,6 +113,21 @@ export default function App() {
               name="DeteccionFiguras"
               component={DeteccionFiguras} // Registro de la nueva pantalla
               options={{ headerTitle: 'Detección de Figuras' }}
+            />
+            <Stack.Screen
+              name="ObjectDetectionScreen"
+              component={ObjectDetectionScreen}
+              options={{ headerTitle: 'Detección de Objetos' }}
+            />
+            <Stack.Screen
+              name="ObjectSearchScreen"
+              component={ObjectSearchScreen}
+              options={{ headerTitle: 'Buscar Objeto' }}
+            />
+            <Stack.Screen
+              name="ObjetoEncontradoScreen"
+              component={ObjetoEncontradoScreen}
+              options={{ headerTitle: 'Objeto Encontrado' }}
             />
           </Stack.Navigator>
         </NavigationContainer>
